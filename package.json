@@ -1,0 +1,25 @@
+{
+  "name": "liri",
+  "version": "1.0.0",
+  "description": "Like Siri, but worse",
+  "main": "liri.js",
+  "dependencies": {
+    "node-spotify-api": "^1.0.7",
+    "request": "^2.83.0",
+    "twitter": "^1.7.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/award3607/liri.git"
+  },
+  "author": "Andrew Ward",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/award3607/liri/issues"
+  },
+  "homepage": "https://github.com/award3607/liri#readme"
+}
