@@ -1,48 +1,70 @@
+//requires
 var fs = require("fs");
 var request = require("request");
 var Spotify = require("node-spotify-api");
-var twit = require("twitter");
-var keys = require("./keys");
+var Twitter = require("twitter");
+var twitterKeys = require("./keys");
 
+//globals
+var f = "./random.txt";
 var args = process.argv.splice(2);
+var defaultSong = "Wave of Mutilation";
+var defaultMovie = "The Big Lebowski";
+var logFile = "liri_log.txt";
 
-//console.log(args);
-
+//"main"
 processCommand(args);
 
+//functions
 function processCommand(arguments) {
 	let command = arguments[0];
 	let param = arguments.splice(1).join(" ");
-	console.log(param);
 
 	switch(command) {
 		case "my-tweets":
+			logMsg("---------------------------\nRunning my-tweets", true);
 			displayTweets();
 		break;
 		case "spotify-this-song":
-			if(!param) {
-				param = "Wave of Mutilation";
+			if (!param) {
+				param = defaultSong;
 			}
+			logMsg(`---------------------------\nRunning spotify-this-song for ${param}`, true);
 			displaySong(param);
 		break;
 		case "movie-this":
-			if(!param) {
-				param = "The Big Lebowski"
+			if (!param) {
+				param = defaultMovie;
 			}
+			logMsg(`---------------------------\nRunning movie-this for ${param}`, true);
 			displayMovie(param);
 		break;
 		case "do-what-it-says":
-
+			logMsg(`---------------------------\nRunning do-what-it-says from file ${f}:`, true);
+			processFile(f);
 		break;
 		default:
-			console.log("Unknown command");
+			logMsg("Unknown command");
 		break;
 	}
 }
 
-
 function displayTweets() {
-
+	let client = new Twitter(twitterKeys);
+	let params = {screen_name: "nodejs", count: 20, exclude_replies: true, include_rts: false};
+	client.get('statuses/user_timeline', params, function(error, tweets, response) {
+		if (error) {
+			logMsg(error);
+		}
+		else {
+			tweets.forEach(function(tweet) {
+				logMsg(`Screen name: ${tweet.user.screen_name}`);
+				logMsg(`Tweet: ${tweet.text}`);
+				logMsg(`When: ${tweet.created_at}`);
+				logMsg("-----------------------");
+			});
+		}
+	});
 }
 
 function displaySong(songName) {
@@ -52,30 +74,52 @@ function displaySong(songName) {
 	});
 	spotify.search({type: "track", query: songName, limit: 1}, function(err, data){
 		if (err) {
-			console.log(err);
+			logMsg(err);
 		}
 		// console.log(JSON.stringify(data, null, 4));
 		let info = data.tracks.items[0];
-		console.log("Artist: " + info.artists[0].name);
-		console.log("Song title: " + info.name);
-		console.log("Preview link: " + info.preview_url);
-		console.log("Album: " + info.album.name);
+		logMsg(`Artist: ${info.artists[0].name}`);
+		logMsg(`Song title: ${info.name}`);
+		logMsg(`Preview link: ${info.preview_url}`);
+		logMsg(`Album: ${info.album.name}`);
 	});
 }
 
 function displayMovie(movieName) {
 	request("http://www.omdbapi.com/?t=" + movieName + "&plot=short&apikey=40e9cece", function(error, response, body) {
-	if(!error && response.statusCode === 200) {
+	if (!error && response.statusCode === 200) {
 	    let data = (JSON.parse(body));
-	    console.log(data.Title);
-	    console.log(data.Year);
-	    console.log(data.imdbRating);
+	    logMsg(`Title: ${data.Title}`);
+	    logMsg(`Year: ${data.Year}`);
+	    logMsg(`IMDB Rating: ${data.imdbRating}`);
 	    //rotten tomatoes rating
-	    console.log(data.Ratings[1].Value)
-	    console.log(data.Country);
-	    console.log(data.Language);
-	    console.log(data.Plot);
-	    console.log(data.Actors);
+	    logMsg(`Rotten Tomatoes Rating: ${data.Ratings[1].Value}`)
+	    logMsg(`Country: ${data.Country}`);
+	    logMsg(`Language: ${data.Language}`);
+	    logMsg(`Plot: ${data.Plot}`);
+	    logMsg(`Actors: ${data.Actors}`);
 	  }
+	});
+}
+
+function processFile(filePath) {
+	fs.readFile(filePath, "utf8", function(err, data) {
+		if (err) {
+			logMsg(err);
+		}
+		let tokens = data.split(",");
+		processCommand(tokens);
+	});
+}
+
+function logMsg(s, suppressConsole) {
+	if (!suppressConsole) {
+		console.log(s);
+	}
+	s += "\n";
+	fs.appendFileSync(logFile, s, function(err) {
+		if (err) {
+			logMsg(err);
+		}
 	});
 }
