@@ -11,9 +11,9 @@ var defaults = {
 	screenName: "nodejs",
 	song: "Wave of Mutilation",
 	movie: "The Big Lebowski",
-	file: "./random.txt"
+	file: "./random.txt",
+	logFile: "liri_log.txt"
 };
-var logFile = "liri_log.txt";
 
 //"main"
 processCommand(args);
@@ -22,32 +22,28 @@ processCommand(args);
 function processCommand(arguments) {
 	let command = arguments[0];
 	let param = arguments.splice(1).join(" ");
-	logMsg(`---------------------------\nRunning ${command} ${param ? `for "${param}"` : `for default`}`, true);
+	logMsg(`---------------------------\nRunning ${command} for ${param ? `"${param}"` : `default`}`, true);
 
 	switch(command) {
 		case "my-tweets":
 			if (!param) {
 				param = defaults.screenName;
 			}
-			// logMsg("---------------------------\nRunning my-tweets", true);
 			displayTweets(param);
 		break;
 		case "spotify-this-song":
 			if (!param) {
 				param = defaults.song;
 			}
-			// logMsg(`---------------------------\nRunning spotify-this-song for ${param}`, true);
 			displaySong(param);
 		break;
 		case "movie-this":
 			if (!param) {
 				param = defaults.movie;
 			}
-			// logMsg(`---------------------------\nRunning movie-this for ${param}`, true);
 			displayMovie(param);
 		break;
 		case "do-what-it-says":
-			// logMsg(`---------------------------\nRunning do-what-it-says from file ${f}:`, true);
 			processFile(defaults.file);
 		break;
 		default:
@@ -84,7 +80,6 @@ function displaySong(songName) {
 		if (err) {
 			logMsg(err);
 		}
-		console.log(data);
 		let info = data.tracks.items[0];
 		logMsg(`Artist: ${info.artists[0].name}`);
 		logMsg(`Song title: ${info.name}`);
@@ -100,11 +95,14 @@ function displayMovie(movieName) {
 		    logMsg(`Title: ${data.Title}`);
 		    logMsg(`Year: ${data.Year}`);
 		    logMsg(`IMDB Rating: ${data.imdbRating}`);
-		    logMsg(`Rotten Tomatoes Rating: ${data.Ratings[1].Value}`)
+		    logMsg(`Rotten Tomatoes Rating: ${data.Ratings[1] ? `${data.Ratings[1].Value}` : 'No rating available'}`);
 		    logMsg(`Country: ${data.Country}`);
 		    logMsg(`Language: ${data.Language}`);
 		    logMsg(`Plot: ${data.Plot}`);
 		    logMsg(`Actors: ${data.Actors}`);
+		}
+		else {
+			logMsg(error);
 		}
 	});
 }
@@ -116,12 +114,8 @@ function processFile(filePath) {
 		}
 		let tokens = data.split(",");
 		tokens = tokens.map(function(token) {
-			token = token.replace(/"/g, '');
-			token = token.trim();
-			console.log(token);
-			return token;
+			return token.replace(/"/g, '').trim();
 		});
-		console.log(tokens);
 		processCommand(tokens);
 	});
 }
@@ -131,7 +125,7 @@ function logMsg(s, suppressConsole) {
 		console.log(s);
 	}
 	s += "\n";
-	fs.appendFileSync(logFile, s, function(err) {
+	fs.appendFileSync(defaults.logFile, s, function(err) {
 		if (err) {
 			logMsg(err);
 		}

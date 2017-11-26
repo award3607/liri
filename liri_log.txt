@@ -1,0 +1,16 @@
+---------------------------
+Running do-what-it-says for default
+---------------------------
+Running spotify-this-song for "I Want It That Way"
+Artist: Backstreet Boys
+Song title: I Want It That Way
+Preview link: https://p.scdn.co/mp3-preview/e72a05dc3f69c891e3390c3ceaa77fad02f6b5f6?cid=435d2daab5e7436ab228721c09ff825b
+Album: The Hits--Chapter One
+---------------------------
+Running do-what-it-says for default
+---------------------------
+Running spotify-this-song for "I Want It That Way"
+Artist: Backstreet Boys
+Song title: I Want It That Way
+Preview link: https://p.scdn.co/mp3-preview/e72a05dc3f69c891e3390c3ceaa77fad02f6b5f6?cid=435d2daab5e7436ab228721c09ff825b
+Album: The Hits--Chapter One
