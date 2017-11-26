@@ -6,10 +6,13 @@ var Twitter = require("twitter");
 var twitterKeys = require("./keys");
 
 //globals
-var f = "./random.txt";
 var args = process.argv.splice(2);
-var defaultSong = "Wave of Mutilation";
-var defaultMovie = "The Big Lebowski";
+var defaults = {
+	screenName: "nodejs",
+	song: "Wave of Mutilation",
+	movie: "The Big Lebowski",
+	file: "./random.txt"
+};
 var logFile = "liri_log.txt";
 
 //"main"
@@ -19,39 +22,44 @@ processCommand(args);
 function processCommand(arguments) {
 	let command = arguments[0];
 	let param = arguments.splice(1).join(" ");
+	logMsg(`---------------------------\nRunning ${command} ${param ? `for "${param}"` : `for default`}`, true);
 
 	switch(command) {
 		case "my-tweets":
-			logMsg("---------------------------\nRunning my-tweets", true);
-			displayTweets();
+			if (!param) {
+				param = defaults.screenName;
+			}
+			// logMsg("---------------------------\nRunning my-tweets", true);
+			displayTweets(param);
 		break;
 		case "spotify-this-song":
 			if (!param) {
-				param = defaultSong;
+				param = defaults.song;
 			}
-			logMsg(`---------------------------\nRunning spotify-this-song for ${param}`, true);
+			// logMsg(`---------------------------\nRunning spotify-this-song for ${param}`, true);
 			displaySong(param);
 		break;
 		case "movie-this":
 			if (!param) {
-				param = defaultMovie;
+				param = defaults.movie;
 			}
-			logMsg(`---------------------------\nRunning movie-this for ${param}`, true);
+			// logMsg(`---------------------------\nRunning movie-this for ${param}`, true);
 			displayMovie(param);
 		break;
 		case "do-what-it-says":
-			logMsg(`---------------------------\nRunning do-what-it-says from file ${f}:`, true);
-			processFile(f);
+			// logMsg(`---------------------------\nRunning do-what-it-says from file ${f}:`, true);
+			processFile(defaults.file);
 		break;
 		default:
-			logMsg("Unknown command");
+			logMsg(`Unknown command: ${command}`);
 		break;
 	}
 }
 
-function displayTweets() {
+function displayTweets(screenName) {
+	console.log(`Twitter screen_name: ${screenName}`);
 	let client = new Twitter(twitterKeys);
-	let params = {screen_name: "nodejs", count: 20, exclude_replies: true, include_rts: false};
+	let params = {screen_name: screenName, count: 20, exclude_replies: true, include_rts: false};
 	client.get('statuses/user_timeline', params, function(error, tweets, response) {
 		if (error) {
 			logMsg(error);
@@ -76,7 +84,7 @@ function displaySong(songName) {
 		if (err) {
 			logMsg(err);
 		}
-		// console.log(JSON.stringify(data, null, 4));
+		console.log(data);
 		let info = data.tracks.items[0];
 		logMsg(`Artist: ${info.artists[0].name}`);
 		logMsg(`Song title: ${info.name}`);
@@ -86,19 +94,18 @@ function displaySong(songName) {
 }
 
 function displayMovie(movieName) {
-	request("http://www.omdbapi.com/?t=" + movieName + "&plot=short&apikey=40e9cece", function(error, response, body) {
-	if (!error && response.statusCode === 200) {
-	    let data = (JSON.parse(body));
-	    logMsg(`Title: ${data.Title}`);
-	    logMsg(`Year: ${data.Year}`);
-	    logMsg(`IMDB Rating: ${data.imdbRating}`);
-	    //rotten tomatoes rating
-	    logMsg(`Rotten Tomatoes Rating: ${data.Ratings[1].Value}`)
-	    logMsg(`Country: ${data.Country}`);
-	    logMsg(`Language: ${data.Language}`);
-	    logMsg(`Plot: ${data.Plot}`);
-	    logMsg(`Actors: ${data.Actors}`);
-	  }
+	request(`http://www.omdbapi.com/?t=${movieName}&plot=short&apikey=40e9cece`, function(error, response, body) {
+		if (!error && response.statusCode === 200) {
+		    let data = (JSON.parse(body));
+		    logMsg(`Title: ${data.Title}`);
+		    logMsg(`Year: ${data.Year}`);
+		    logMsg(`IMDB Rating: ${data.imdbRating}`);
+		    logMsg(`Rotten Tomatoes Rating: ${data.Ratings[1].Value}`)
+		    logMsg(`Country: ${data.Country}`);
+		    logMsg(`Language: ${data.Language}`);
+		    logMsg(`Plot: ${data.Plot}`);
+		    logMsg(`Actors: ${data.Actors}`);
+		}
 	});
 }
 
@@ -108,6 +115,13 @@ function processFile(filePath) {
 			logMsg(err);
 		}
 		let tokens = data.split(",");
+		tokens = tokens.map(function(token) {
+			token = token.replace(/"/g, '');
+			token = token.trim();
+			console.log(token);
+			return token;
+		});
+		console.log(tokens);
 		processCommand(tokens);
 	});
 }
